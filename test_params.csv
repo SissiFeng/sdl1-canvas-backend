@@ -1,0 +1,3 @@
+run_number,well,experiment_type,robot_ip,arduino_port,biologic_port,deposition_current,deposition_duration
+001,C5,full,100.67.89.154,,USB0,-0.002,60
+002,C6,deposition,100.67.89.154,,USB0,-0.003,90
