@@ -1,0 +1,23 @@
+# 基础依赖
+opentrons>=6.0.0
+pyserial>=3.5
+pandas>=1.5.0
+numpy>=1.21.0
+python-dateutil>=2.8.2
+typing-extensions>=4.0.0
+pyyaml>=6.0.0
+
+# 数据处理和可视化
+matplotlib>=3.5.0
+scipy>=1.7.0
+
+# 异步支持
+aiohttp>=3.8.0
+asyncio>=3.4.3
+
+# 开发工具
+pytest>=7.0.0
+black>=22.0.0
+flake8>=4.0.0
+
+# 注意：biologic-ec-lab 包需要单独安装
