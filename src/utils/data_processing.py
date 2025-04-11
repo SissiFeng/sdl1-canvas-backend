@@ -1,6 +1,5 @@
 """
-数据处理模块，用于处理电化学实验数据的采集、处理、存储和可视化。
-包含实时数据处理和显示功能。
+data processing module, for processing the data of electrochemical experiments, including real-time data processing and display.
 """
 
 import os
@@ -16,19 +15,19 @@ import json
 
 @dataclass
 class ExperimentConfig:
-    """实验配置数据类"""
+    """experiment configuration data class"""
     experiment_id: str
     base_path: str
     deposition_path: str
     characterization_path: str
 
 class DataHandler:
-    """数据处理器抽象基类"""
+    """data handler abstract base class"""
     async def handle_data(self, data: Any) -> None:
         pass
 
 class DataAcquisitionModule:
-    """数据采集模块"""
+    """data acquisition module"""
     def __init__(self, channel, experiment_config: ExperimentConfig):
         self.channel = channel
         self.config = experiment_config
@@ -36,11 +35,11 @@ class DataAcquisitionModule:
         self.logger = logging.getLogger(__name__)
 
     def add_handler(self, handler: DataHandler) -> None:
-        """添加数据处理器"""
+        """add data handler"""
         self.data_handlers.append(handler)
 
     async def notify_handlers(self, data: Any) -> None:
-        """通知所有处理器"""
+        """notify all handlers"""
         for handler in self.data_handlers:
             try:
                 await handler.handle_data(data)
@@ -48,7 +47,7 @@ class DataAcquisitionModule:
                 self.logger.error(f"Handler {handler.__class__.__name__} failed: {str(e)}")
 
     async def start_acquisition(self, techniques: List[Any]):
-        """开始数据采集"""
+        """start data acquisition"""
         try:
             runner = self.channel.run_techniques(techniques)
             async for data in runner:
@@ -59,7 +58,7 @@ class DataAcquisitionModule:
             raise
 
 class DataProcessor(DataHandler):
-    """数据处理模块"""
+    """data processing module"""
     def __init__(self):
         self.current_technique = None
         self.tech_index = 0
@@ -68,7 +67,7 @@ class DataProcessor(DataHandler):
         self.logger = logging.getLogger(__name__)
 
     async def handle_data(self, data: Any) -> pd.DataFrame:
-        """处理数据并返回DataFrame"""
+        """process data and return DataFrame"""
         try:
             if hasattr(data.data, 'process_data'):
                 return self._process_indexed_data(data)
@@ -78,25 +77,25 @@ class DataProcessor(DataHandler):
             raise
 
     def _process_indexed_data(self, data: Any) -> pd.DataFrame:
-        """处理带索引的数据"""
+        """process indexed data"""
         return pd.DataFrame(data.data.process_data.to_json(), index=[0])
 
     def _process_regular_data(self, data: Any) -> pd.DataFrame:
-        """处理常规数据"""
+        """process regular data"""
         return pd.DataFrame(data.data.to_json(), index=[0])
 
     def get_technique_name(self, data: Any) -> str:
-        """获取技术名称"""
+        """get technique name"""
         return str(type(data.data)).split("'")[1].split(".")[-2]
 
 class DataStorage(DataHandler):
-    """数据存储模块"""
+    """data storage module"""
     def __init__(self, experiment_config: ExperimentConfig):
         self.config = experiment_config
         self.logger = logging.getLogger(__name__)
 
     async def handle_data(self, data: Any) -> None:
-        """处理并存储数据"""
+        """process and store data"""
         try:
             processor = DataProcessor()
             processed_data = await processor.handle_data(data)
@@ -106,34 +105,34 @@ class DataStorage(DataHandler):
             raise
 
     def save_data(self, data: pd.DataFrame, technique_id: int, technique_name: str) -> None:
-        """保存数据到文件"""
+        """save data to file"""
         filename = f'{self.config.experiment_id}_{technique_id}_{technique_name}.csv'
         filepath = os.path.join(self.config.characterization_path, filename)
         data.to_csv(filepath, index=False)
         self.logger.info(f"Saved data to {filepath}")
 
     def load_data(self, technique_id: int, technique_name: str) -> pd.DataFrame:
-        """从文件加载数据"""
+        """load data from file"""
         filename = f'{self.config.experiment_id}_{technique_id}_{technique_name}.csv'
         filepath = os.path.join(self.config.characterization_path, filename)
         return pd.read_csv(filepath)
 
     @staticmethod
     def get_technique_type(data: Any) -> str:
-        """获取技术类型"""
+        """get technique type"""
         return str(type(data.data)).split("'")[1].split(".")[-2]
 
 class RealTimeVisualizer(DataHandler):
-    """实时可视化模块"""
+    """real-time visualization module"""
     def __init__(self):
-        # 设置后端
+        # set backend
         import matplotlib
         matplotlib.use('TkAgg')
         
-        plt.ion()  # 启用交互模式
+        plt.ion()  # enable interactive mode
         self.figure, self.ax = plt.subplots(figsize=(10, 6))
         
-        # 初始化数据存储
+        # initialize data storage
         self.data_cache = {}
         self.lines = {}
         self.technique_plots = {
@@ -149,31 +148,31 @@ class RealTimeVisualizer(DataHandler):
             'MockResult': self._setup_ocv_plot
         }
         
-        # 配置图表窗口
-        self.figure.canvas.manager.set_window_title('实时电化学数据')
+        # configure chart window
+        self.figure.canvas.manager.set_window_title('real-time electrochemical data')
         self.current_technique = None
         
-        # 显示图表
+        # show chart
         plt.show(block=False)
         self.figure.canvas.draw()
         self.figure.canvas.flush_events()
         
         self.logger = logging.getLogger(__name__)
-        self.logger.info("RealTimeVisualizer 初始化完成")
+        self.logger.info("RealTimeVisualizer initialized")
 
     async def handle_data(self, data: Any) -> None:
-        """处理并可视化数据"""
+        """process and visualize data"""
         try:
-            # 获取技术类型
+            # get technique type
             technique_type = self.get_technique_type(data)
-            self.logger.debug(f"检测到技术类型: {technique_type}")
+            self.logger.debug(f"detected technique type: {technique_type}")
             
-            # 提取数据
+            # extract data
             if hasattr(data, 'data') and hasattr(data.data, 'to_json'):
                 json_data = data.data.to_json()
-                self.logger.debug(f"接收到数据: {json_data}")
+                self.logger.debug(f"received data: {json_data}")
                 
-                # 如果是新的技术类型，初始化图表
+                # if it's a new technique type, initialize the chart
                 if technique_type != self.current_technique:
                     self.initialize_plot(technique_type)
                     self.current_technique = technique_type
@@ -181,97 +180,97 @@ class RealTimeVisualizer(DataHandler):
                     self.lines[technique_type], = self.ax.plot([], [], 'bo-', markersize=4, label=technique_type)
                     self.ax.legend()
                 
-                # 获取最新数据点
+                # get the latest data point
                 x_data, y_data = self._get_plot_data(json_data, technique_type)
                 if x_data and y_data:
-                    # 添加到数据缓存
+                    # add to data cache
                     self.data_cache[technique_type]['x'].extend(x_data)
                     self.data_cache[technique_type]['y'].extend(y_data)
                     
-                    # 更新图表
+                    # update chart
                     self.lines[technique_type].set_data(
                         self.data_cache[technique_type]['x'],
                         self.data_cache[technique_type]['y']
                     )
                     
-                    # 调整坐标轴范围
+                    # adjust axis range
                     self.ax.relim()
                     self.ax.autoscale_view()
                     
-                    # 强制重绘
+                    # force redraw
                     self.figure.canvas.draw()
                     self.figure.canvas.flush_events()
                     
-                    self.logger.debug(f"更新图表: x={x_data[-1]:.2f}, y={y_data[-1]:.4f}")
+                    self.logger.debug(f"updated chart: x={x_data[-1]:.2f}, y={y_data[-1]:.4f}")
                 
         except Exception as e:
-            self.logger.error(f"可视化错误: {str(e)}")
+            self.logger.error(f"visualization error: {str(e)}")
             import traceback
             self.logger.error(traceback.format_exc())
 
     def initialize_plot(self, technique_type: str) -> None:
-        """初始化图表"""
-        self.logger.info(f"初始化图表: {technique_type}")
+        """initialize chart"""
+        self.logger.info(f"initializing chart: {technique_type}")
         
-        # 清除现有图表
+        # clear existing chart
         self.ax.clear()
         
-        # 根据技术类型设置图表
+        # set chart based on technique type
         if technique_type in self.technique_plots:
             self.technique_plots[technique_type]()
         else:
             self._setup_default_plot()
         
-        # 通用设置
+        # general settings
         self.ax.grid(True)
         self.figure.tight_layout()
         
-        # 强制重绘
+        # force redraw
         self.figure.canvas.draw()
         plt.pause(0.1)
 
     def _setup_default_plot(self) -> None:
-        """默认图表设置"""
-        self.ax.set_xlabel('数据 X')
-        self.ax.set_ylabel('数据 Y')
-        self.ax.set_title('电化学数据')
+        """default chart settings"""
+        self.ax.set_xlabel('data X')
+        self.ax.set_ylabel('data Y')
+        self.ax.set_title('electrochemical data')
 
     def _setup_cv_plot(self) -> None:
-        """设置CV图表"""
-        self.ax.set_xlabel('电位 (V)')
-        self.ax.set_ylabel('电流 (A)')
-        self.ax.set_title('循环伏安法')
+        """CV chart settings"""
+        self.ax.set_xlabel('voltage (V)')
+        self.ax.set_ylabel('current (A)')
+        self.ax.set_title('cyclic voltammetry')
 
     def _setup_eis_plot(self) -> None:
-        """设置EIS图表"""
+        """EIS chart settings"""
         self.ax.set_xlabel('Re(Z) (Ω)')
         self.ax.set_ylabel('-Im(Z) (Ω)')
-        self.ax.set_title('电化学阻抗谱')
+        self.ax.set_title('electrochemical impedance spectroscopy')
 
     def _setup_ocv_plot(self) -> None:
-        """设置OCV图表"""
-        self.ax.set_xlabel('时间 (s)')
-        self.ax.set_ylabel('电位 (V)')
-        self.ax.set_title('开路电压')
+        """OCV chart settings"""
+        self.ax.set_xlabel('time (s)')
+        self.ax.set_ylabel('voltage (V)')
+        self.ax.set_title('open circuit voltage')
 
     def _setup_cp_plot(self) -> None:
-        """设置CP图表"""
-        self.ax.set_xlabel('时间 (s)')
-        self.ax.set_ylabel('电位 (V)')
-        self.ax.set_title('恒电流法')
+        """CP chart settings"""
+        self.ax.set_xlabel('time (s)')
+        self.ax.set_ylabel('voltage (V)')
+        self.ax.set_title('constant current')
 
     def _setup_lp_plot(self) -> None:
-        """设置LP图表"""
-        self.ax.set_xlabel('电位 (V)')
-        self.ax.set_ylabel('电流 (A)')
-        self.ax.set_title('线性极化')
+        """LP chart settings"""
+        self.ax.set_xlabel('voltage (V)')
+        self.ax.set_ylabel('current (A)')
+        self.ax.set_title('linear polarization')
 
     def _get_plot_data(self, data: Dict[str, Any], technique_type: str) -> Tuple[List[float], List[float]]:
-        """获取绘图数据"""
+        """get plot data"""
         if not data:
             return [], []
             
-        # 确保所有数据都是列表格式
+        # ensure all data is list format
         processed_data = {}
         for key, value in data.items():
             if isinstance(value, (int, float)):
@@ -284,7 +283,7 @@ class RealTimeVisualizer(DataHandler):
                 except:
                     processed_data[key] = [value]
         
-        # 根据技术类型提取数据
+        # extract data based on technique type
         if technique_type in ['CV', 'MockCVTechnique']:
             return processed_data.get('Ewe', []), processed_data.get('I', [])
         elif technique_type in ['PEIS', 'MockPEISTechnique']:
@@ -296,38 +295,38 @@ class RealTimeVisualizer(DataHandler):
         elif technique_type == 'LP':
             return processed_data.get('Ewe', []), processed_data.get('I', [])
         else:
-            # 尝试找到任何可以绘图的数值数组
+            # try to find any numeric array that can be plotted
             for key1 in processed_data:
                 if isinstance(processed_data[key1], list) and processed_data[key1]:
                     for key2 in processed_data:
                         if key1 != key2 and isinstance(processed_data[key2], list) and processed_data[key2]:
-                            self.logger.info(f"使用通用数据: x={key1}, y={key2}")
+                            self.logger.info(f"using general data: x={key1}, y={key2}")
                             return processed_data[key1], processed_data[key2]
             return [], []
 
     @staticmethod
     def get_technique_type(data: Any) -> str:
-        """获取技术类型"""
+        """get technique type"""
         if hasattr(data, 'data'):
             data_obj = data.data
             
-            # 方法1：获取类名
+            # method 1: get class name
             class_name = data_obj.__class__.__name__
             if class_name != 'object':
                 return class_name
             
-            # 方法2：查找类型属性
+            # method 2: find type attribute
             if hasattr(data_obj, 'type'):
                 return data_obj.type
             
-            # 方法3：查找技术类型属性
+            # method 3: find technique type attribute
             if hasattr(data_obj, 'technique_type'):
                 return data_obj.technique_type
         
         return "Unknown"
 
     def __del__(self):
-        """清理资源"""
+        """clean up resources"""
         try:
             plt.close(self.figure)
             plt.close('all')
@@ -335,7 +334,7 @@ class RealTimeVisualizer(DataHandler):
             pass
 
 class ExperimentController:
-    """实验控制器"""
+    """experiment controller"""
     def __init__(self, experiment_config: ExperimentConfig):
         self.config = experiment_config
         self.data_acquisition = None
@@ -344,9 +343,9 @@ class ExperimentController:
         self.visualizer = RealTimeVisualizer()
         self.logger = logging.getLogger(__name__)
         
-        # 设置更详细的日志级别
+        # set more detailed log level
         self.logger.setLevel(logging.DEBUG)
-        # 添加控制台处理器
+        # add console handler
         ch = logging.StreamHandler()
         ch.setLevel(logging.DEBUG)
         formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -354,52 +353,52 @@ class ExperimentController:
         self.logger.addHandler(ch)
 
     def initialize(self, channel) -> None:
-        """初始化控制器"""
-        self.logger.info("初始化实验控制器")
+        """initialize controller"""
+        self.logger.info("initializing experiment controller")
         self.data_acquisition = DataAcquisitionModule(channel, self.config)
         
-        # 直接处理数据，而不是通过处理器
+        # directly process data, not through processor
         self.data_acquisition.add_handler(self.visualizer)
         self.data_acquisition.add_handler(self.data_storage)
         
-        self.logger.info("已添加数据处理器")
+        self.logger.info("data processor added")
 
     async def run_experiment(self, techniques: List[Any]) -> None:
-        """运行实验"""
+        """run experiment"""
         try:
-            self.logger.info(f"开始实验 {self.config.experiment_id}")
-            self.logger.debug(f"技术列表: {[t.__class__.__name__ for t in techniques]}")
+            self.logger.info(f"starting experiment {self.config.experiment_id}")
+            self.logger.debug(f"technique list: {[t.__class__.__name__ for t in techniques]}")
             
             async for data in self.data_acquisition.start_acquisition(techniques):
-                # 记录每个数据点
+                # record each data point
                 if hasattr(data, 'data') and hasattr(data.data, 'to_json'):
                     json_data = data.data.to_json()
-                    self.logger.debug(f"接收到数据点: {json_data}")
+                    self.logger.debug(f"received data point: {json_data}")
                     
-                    # 确保数据被正确处理
+                    # ensure data is correctly processed
                     technique_type = (data.data.__class__.__name__ 
                                    if hasattr(data.data, '__class__') 
                                    else "Unknown")
-                    self.logger.debug(f"技术类型: {technique_type}")
+                    self.logger.debug(f"technique type: {technique_type}")
                     
-                    # 检查数据缓存
+                    # check data cache
                     if hasattr(self.visualizer, 'data_cache'):
                         cache_info = {k: len(v['x']) for k, v in self.visualizer.data_cache.items()}
-                        self.logger.debug(f"可视化器缓存状态: {cache_info}")
+                        self.logger.debug(f"visualizer cache status: {cache_info}")
             
-            self.logger.info(f"实验 {self.config.experiment_id} 完成")
+            self.logger.info(f"experiment {self.config.experiment_id} completed")
         except Exception as e:
-            self.logger.error(f"实验失败: {str(e)}")
+            self.logger.error(f"experiment failed: {str(e)}")
             import traceback
             self.logger.error(traceback.format_exc())
             raise
 
 def create_experiment_config(experiment_id: str, base_path: str) -> ExperimentConfig:
-    """创建实验配置"""
+    """create experiment configuration"""
     deposition_path = os.path.join(base_path, 'deposition')
     characterization_path = os.path.join(base_path, 'characterization')
     
-    # 确保目录存在
+    # ensure directories exist
     os.makedirs(deposition_path, exist_ok=True)
     os.makedirs(characterization_path, exist_ok=True)
     
@@ -411,7 +410,7 @@ def create_experiment_config(experiment_id: str, base_path: str) -> ExperimentCo
     ) 
 
 class ExperimentDataManager:
-    """实验数据管理器"""
+    """experiment data manager"""
     
     def __init__(self, experiment_id: str, base_dir: str):
         self.experiment_id = experiment_id
@@ -423,23 +422,23 @@ class ExperimentDataManager:
                           technique_name: str,
                           data_type: str = "characterization") -> str:
         """
-        保存技术数据到CSV文件
+        save technique data to CSV file
         
-        参数
+        Parameters
         ----------
         data : pd.DataFrame
-            要保存的数据
+            data to save
         technique_id : int
-            技术ID
+            technique ID
         technique_name : str
-            技术名称
+            technique name
         data_type : str
-            数据类型（characterization 或 deposition）
+            data type (characterization or deposition)
             
-        返回
+        Returns
         -------
         str
-            保存的文件路径
+            saved file path
         """
         filename = f"{self.experiment_id}_{technique_id}_{technique_name}.csv"
         save_dir = os.path.join(self.base_dir, data_type)
@@ -451,17 +450,17 @@ class ExperimentDataManager:
     
     def save_metadata(self, metadata: Dict[str, Any]) -> str:
         """
-        保存实验元数据到JSON文件
+        save experiment metadata to JSON file
         
-        参数
+        Parameters
         ----------
         metadata : Dict[str, Any]
-            要保存的元数据
+            metadata to save
             
-        返回
+        Returns
         -------
         str
-            保存的文件路径
+            saved file path
         """
         filename = "metadata.json"
         filepath = os.path.join(self.base_dir, filename)
@@ -474,26 +473,26 @@ class ExperimentDataManager:
     
     def update_metadata(self, updates: Dict[str, Any]) -> None:
         """
-        更新现有的元数据文件
+        update existing metadata file
         
-        参数
+        Parameters
         ----------
         updates : Dict[str, Any]
-            新的元数据值
+            new metadata values
         """
         filepath = os.path.join(self.base_dir, "metadata.json")
         
-        # 读取现有元数据
+        # read existing metadata
         if os.path.exists(filepath):
             with open(filepath, 'r') as f:
                 metadata = json.load(f)
         else:
             metadata = {}
         
-        # 更新元数据
+        # update metadata
         metadata.update(updates)
         
-        # 保存更新后的元数据
+        # save updated metadata
         with open(filepath, 'w') as f:
             json.dump(metadata, f, indent=4)
     
@@ -502,21 +501,21 @@ class ExperimentDataManager:
                           technique_name: str,
                           data_type: str = "characterization") -> Optional[pd.DataFrame]:
         """
-        从CSV文件加载技术数据
+        load technique data from CSV file
         
-        参数
+        Parameters
         ----------
         technique_id : int
-            技术ID
+            technique ID
         technique_name : str
-            技术名称
+            technique name
         data_type : str
-            数据类型（characterization 或 deposition）
+            data type (characterization or deposition)
             
-        返回
+        Returns
         -------
         Optional[pd.DataFrame]
-            加载的数据，如果文件不存在则返回None
+            loaded data, None if file does not exist
         """
         filename = f"{self.experiment_id}_{technique_id}_{technique_name}.csv"
         filepath = os.path.join(self.base_dir, data_type, filename)
@@ -527,12 +526,12 @@ class ExperimentDataManager:
     
     def get_metadata(self) -> Optional[Dict[str, Any]]:
         """
-        加载实验元数据
+        load experiment metadata
         
-        返回
+        Returns
         -------
         Optional[Dict[str, Any]]
-            元数据，如果文件不存在则返回None
+            metadata, None if file does not exist
         """
         filepath = os.path.join(self.base_dir, "metadata.json")
         

@@ -1,5 +1,5 @@
 """
-自动电化学实验系统主程序
+automatic electrochemical experiment system main program
 """
 
 import os
@@ -13,7 +13,7 @@ import numpy as np
 from datetime import datetime
 from typing import List, Dict, Any, Optional
 
-# 配置日志
+# configure logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -21,11 +21,11 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-# 添加项目根目录到 Python 路径
+# add project root directory to Python path
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, project_root)
 
-# 根据环境选择使用真实设备或模拟设备
+# choose to use real device or mock device based on environment
 try:
     from biologic import connect, BANDWIDTH, I_RANGE, E_RANGE
     from biologic.techniques.ocv import OCVTechnique, OCVParams
@@ -44,7 +44,7 @@ except ImportError:
         CVStep, CPStep
     )
     USE_MOCK = True
-    # 定义模拟的常量
+    # define constants for mock device
     class BANDWIDTH:
         BW_5 = 5
     class I_RANGE:
@@ -62,7 +62,7 @@ from src.utils.data_processing import create_experiment_config, ExperimentContro
 from src.utils.config_loader import ConfigLoader, ExperimentParams
 
 def setup_logging(experiment_id: str) -> None:
-    """设置日志系统"""
+    """setup logging system"""
     log_dir = os.path.join(os.getcwd(), 'logs')
     os.makedirs(log_dir, exist_ok=True)
     log_file = os.path.join(log_dir, f"{experiment_id}.log")
@@ -77,44 +77,44 @@ def setup_logging(experiment_id: str) -> None:
     )
 
 def parse_arguments() -> argparse.Namespace:
-    """解析命令行参数"""
-    parser = argparse.ArgumentParser(description="自动电化学实验系统")
+    """parse command line arguments"""
+    parser = argparse.ArgumentParser(description="automatic electrochemical experiment system")
     
-    # 参数来源选择
+    # parameter source selection
     group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument("--params-file", help="参数配置文件路径（CSV或Excel）")
-    group.add_argument("--generate-template", help="生成参数模板文件")
-    group.add_argument("--single-run", action="store_true", help="单次运行模式")
+    group.add_argument("--params-file", help="parameter configuration file path (CSV or Excel)")
+    group.add_argument("--generate-template", help="generate parameter template file")
+    group.add_argument("--single-run", action="store_true", help="single run mode")
     
-    # 单次运行模式的参数
-    single_run_group = parser.add_argument_group("单次运行参数")
-    single_run_group.add_argument("--run-number", help="实验运行编号")
-    single_run_group.add_argument("--well", help="待测试的孔位 (例如: 'C5')")
+    # parameters for single run mode
+    single_run_group = parser.add_argument_group("single run parameters")
+    single_run_group.add_argument("--run-number", help="experiment run number")
+    single_run_group.add_argument("--well", help="well to test (e.g., 'C5')")
     single_run_group.add_argument("--experiment-type", 
                                 choices=['deposition', 'characterization', 'full'],
-                                help="实验类型")
+                                help="experiment type")
     single_run_group.add_argument("--robot-ip", default="100.67.89.154",
-                                help="OT2机器人IP地址")
-    single_run_group.add_argument("--arduino-port", help="Arduino设备端口")
+                                help="OT2 robot IP address")
+    single_run_group.add_argument("--arduino-port", help="Arduino device port")
     single_run_group.add_argument("--biologic-port", default="USB0",
-                                help="Biologic设备USB端口")
+                                help="Biologic device USB port")
     single_run_group.add_argument("--deposition-current", type=float,
-                                default=-0.002, help="沉积电流 (A)")
+                                default=-0.002, help="deposition current (A)")
     single_run_group.add_argument("--deposition-duration", type=int,
-                                default=60, help="沉积时间 (s)")
+                                default=60, help="deposition time (s)")
     
     args = parser.parse_args()
     
-    # 验证单次运行模式的必需参数
+    # validate required parameters for single run mode
     if args.single_run:
         if not all([args.run_number, args.well, args.experiment_type]):
-            parser.error("单次运行模式需要提供 --run-number, --well 和 --experiment-type")
+            parser.error("single run mode requires --run-number, --well and --experiment-type")
     
     return args
 
 def create_deposition_techniques(params: ExperimentParams) -> list:
-    """创建沉积实验技术序列"""
-    # OCV技术
+    """create deposition experiment techniques sequence"""
+    # OCV technique
     ocv_params = OCVParams(
         rest_time_T=60,
         record_every_dT=0.5,
@@ -124,7 +124,7 @@ def create_deposition_techniques(params: ExperimentParams) -> list:
     )
     ocv_tech = OCVTechnique(ocv_params)
     
-    # CP技术
+    # CP technique
     cp_step = CPStep(
         current=params.deposition_current,
         duration=params.deposition_duration,
@@ -142,7 +142,7 @@ def create_deposition_techniques(params: ExperimentParams) -> list:
     return [ocv_tech, cp_tech, ocv_tech]
 
 def create_characterization_techniques() -> list:
-    """创建表征实验技术序列"""
+    """create characterization experiment techniques sequence"""
     techniques = []
     
     # OCV
@@ -196,36 +196,36 @@ def create_characterization_techniques() -> list:
     return techniques
 
 async def run_experiment(params: ExperimentParams) -> None:
-    """运行单个实验"""
-    # 创建实验ID和路径
+    """run a single experiment"""
+    # create experiment ID and path
     experiment_id = f"{datetime.now().strftime('%Y%m%d')}_{params.run_number}"
     experiment_path = os.path.join(os.getcwd(), 'data', experiment_id)
     
-    # 设置日志
+    # setup logging
     setup_logging(experiment_id)
     logger = logging.getLogger(__name__)
     logger.info(f"Starting experiment {experiment_id}")
     
-    # 创建实验配置和控制器
+    # create experiment configuration and controller
     config = create_experiment_config(experiment_id, experiment_path)
     controller = ExperimentController(config)
     
     try:
-        # 初始化设备
+        # initialize devices
         opentrons = OpentronsDevice(params.robot_ip)
         arduino = ArduinoDevice(params.arduino_port)
         
-        # 连接设备
+        # connect devices
         await opentrons.connect()
         await arduino.connect()
         
-        # 准备实验技术
+        # prepare experiment techniques
         if params.experiment_type in ['deposition', 'full']:
             deposition_techniques = create_deposition_techniques(params)
         if params.experiment_type in ['characterization', 'full']:
             characterization_techniques = create_characterization_techniques()
         
-        # 运行实验
+        # run experiment
         with connect(params.biologic_port) as bl:
             channel = bl.get_channel(1)
             controller.initialize(channel)
@@ -244,35 +244,35 @@ async def run_experiment(params: ExperimentParams) -> None:
         logger.error(f"Experiment failed: {str(e)}")
         raise
     finally:
-        # 清理设备连接
+        # clean up device connections
         await opentrons.disconnect()
         await arduino.disconnect()
 
 async def main():
-    """主程序"""
+    """main program"""
     args = parse_arguments()
     config_loader = ConfigLoader()
     
-    # 生成模板文件
+    # generate template file
     if args.generate_template:
         config_loader.save_template(args.generate_template)
-        print(f"参数模板文件已生成: {args.generate_template}")
+        print(f"parameter template file generated: {args.generate_template}")
         return
     
-    # 从文件加载参数
+    # load parameters from file
     if args.params_file:
         if args.params_file.endswith('.csv'):
             params_list = config_loader.load_from_csv(args.params_file)
         elif args.params_file.endswith(('.xlsx', '.xls')):
             params_list = config_loader.load_from_excel(args.params_file)
         else:
-            raise ValueError("不支持的文件格式，请使用CSV或Excel文件")
+            raise ValueError("unsupported file format, please use CSV or Excel file")
         
-        # 批量运行实验
+        # run experiments in batch
         for params in params_list:
             await run_experiment(params)
     
-    # 单次运行模式
+    # single run mode
     elif args.single_run:
         params = ExperimentParams(
             run_number=args.run_number,
