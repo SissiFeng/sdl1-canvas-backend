@@ -1,5 +1,5 @@
 """
-配置加载器模块，用于从不同来源（命令行、CSV、Excel等）加载实验参数
+configuration loader module, for loading experiment parameters from different sources (command line, CSV, Excel, etc.)
 """
 
 import pandas as pd
@@ -11,7 +11,7 @@ from datetime import datetime
 
 @dataclass
 class ExperimentParams:
-    """实验参数数据类"""
+    """experiment parameters data class"""
     run_number: str
     well: str
     experiment_type: str
@@ -22,12 +22,12 @@ class ExperimentParams:
     deposition_duration: int = 60
 
 class ConfigLoader:
-    """配置加载器类"""
+    """configuration loader class"""
     def __init__(self):
         self.logger = logging.getLogger(__name__)
 
     def load_from_csv(self, file_path: str) -> List[ExperimentParams]:
-        """从CSV文件加载实验参数"""
+        """load experiment parameters from CSV file"""
         try:
             df = pd.read_csv(file_path)
             return self._process_dataframe(df)
@@ -36,7 +36,7 @@ class ConfigLoader:
             raise
 
     def load_from_excel(self, file_path: str, sheet_name: Optional[str] = None) -> List[ExperimentParams]:
-        """从Excel文件加载实验参数"""
+        """load experiment parameters from Excel file"""
         try:
             df = pd.read_excel(file_path, sheet_name=sheet_name)
             return self._process_dataframe(df)
@@ -45,19 +45,19 @@ class ConfigLoader:
             raise
 
     def _process_dataframe(self, df: pd.DataFrame) -> List[ExperimentParams]:
-        """处理数据框并转换为参数列表"""
+        """process the dataframe and convert to parameter list"""
         required_columns = ['run_number', 'well', 'experiment_type']
         
-        # 检查必需列
+        # check required columns
         missing_columns = [col for col in required_columns if col not in df.columns]
         if missing_columns:
-            raise ValueError(f"缺少必需列: {', '.join(missing_columns)}")
+            raise ValueError(f"missing required columns: {', '.join(missing_columns)}")
 
-        # 验证experiment_type的值
+        # validate the values of experiment_type
         valid_types = ['deposition', 'characterization', 'full']
         invalid_types = df[~df['experiment_type'].isin(valid_types)]['experiment_type'].unique()
         if len(invalid_types) > 0:
-            raise ValueError(f"无效的实验类型: {invalid_types}")
+            raise ValueError(f"invalid experiment types: {invalid_types}")
 
         params_list = []
         for _, row in df.iterrows():
@@ -76,7 +76,7 @@ class ConfigLoader:
         return params_list
 
     def save_template(self, file_path: str, format: str = 'csv') -> None:
-        """保存参数模板文件"""
+        """save the parameter template file"""
         template_data = {
             'run_number': ['001', '002'],
             'well': ['C5', 'C6'],
@@ -100,18 +100,18 @@ class ConfigLoader:
         self.logger.info(f"模板文件已保存到: {file_path}")
 
 def validate_experiment_params(params: ExperimentParams) -> None:
-    """验证实验参数"""
+    """validate the experiment parameters"""
     if not params.run_number:
-        raise ValueError("运行编号不能为空")
+        raise ValueError("run number cannot be empty")
     
     if not params.well:
-        raise ValueError("孔位不能为空")
+        raise ValueError("well cannot be empty")
     
     if params.experiment_type not in ['deposition', 'characterization', 'full']:
-        raise ValueError(f"无效的实验类型: {params.experiment_type}")
+        raise ValueError(f"invalid experiment type: {params.experiment_type}")
     
     if params.deposition_current >= 0:
-        raise ValueError("沉积电流必须为负值")
+        raise ValueError("deposition current must be negative")
     
     if params.deposition_duration <= 0:
-        raise ValueError("沉积时间必须大于0") 
+        raise ValueError("deposition duration must be greater than 0")

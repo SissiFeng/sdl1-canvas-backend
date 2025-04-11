@@ -1,6 +1,6 @@
 """
-工作流测试模块，用于验证自动化实验系统的完整工作流程
-包括电沉积和表征实验的测试
+workflow test module, used to verify the complete workflow of the automated experiment system
+including the test of electroplating and characterization experiments
 """
 import os
 import asyncio
@@ -20,7 +20,7 @@ from core.devices.mock_biologic_device import (
 from utils.config_loader import ExperimentParams
 from utils.data_processing import ExperimentDataManager
 
-# 配置日志
+# configure logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -29,52 +29,52 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class TestConfig:
-    """测试配置"""
+    """test configuration"""
     experiment_id: str
     base_dir: str = "test_data"
-    deposition_current: float = -0.002  # 沉积电流 (A)
-    deposition_duration: float = 60     # 沉积时间 (s)
-    well_to_test: str = "C5"           # 测试孔位
+    deposition_current: float = -0.002  # deposition current (A)
+    deposition_duration: float = 60     # deposition time (s)
+    well_to_test: str = "C5"           # well to test
 
 class MockBiologicDevice:
-    """模拟 Biologic 设备"""
+    """mock Biologic device"""
     def __init__(self, data_manager: ExperimentDataManager):
         self.data_manager = data_manager
         self.connected = False
         
     def connect(self) -> bool:
-        """连接设备"""
+        """connect to the device"""
         self.connected = True
         logger.info("Connected to mock Biologic device")
         return True
         
     def disconnect(self) -> bool:
-        """断开设备"""
+        """disconnect from the device"""
         self.connected = False
         logger.info("Disconnected from mock Biologic device")
         return True
         
     async def run_techniques(self, techniques: List[Any], data_type: str = "characterization") -> None:
-        """运行电化学技术序列"""
+        """run electrochemical technique sequence"""
         if not self.connected:
             raise ConnectionError("Not connected to mock Biologic device")
             
         for tech_id, technique in enumerate(techniques):
             logger.info(f"Running technique {tech_id}: {type(technique).__name__}")
             
-            # 生成模拟数据
+            # generate simulated data
             data_points = defaultdict(list)
             async for point in technique.generate_data():
-                # 从 MockData 对象获取数据
+                # get data from MockData object
                 data = point.to_json()
                 for key, values in data.items():
-                    if values:  # 只添加非空的最新数据点
+                    if values:  # only add non-empty latest data points
                         data_points[key].append(values[-1])
             
-            # 将数据点转换为 DataFrame
+            # convert data points to DataFrame
             df = pd.DataFrame(data_points)
             
-            # 保存数据
+            # save data
             self.data_manager.save_technique_data(
                 data=df,
                 technique_id=tech_id,
@@ -83,7 +83,7 @@ class MockBiologicDevice:
             )
             
 class WorkflowTester:
-    """工作流测试器"""
+    """workflow tester"""
     def __init__(self, config: TestConfig):
         self.config = config
         self.data_manager = ExperimentDataManager(
@@ -93,12 +93,12 @@ class WorkflowTester:
         self.device = MockBiologicDevice(self.data_manager)
         
     def setup(self) -> None:
-        """设置测试环境"""
-        # 创建数据目录
+        """set up test environment"""
+        # create data directory
         os.makedirs(os.path.join(self.config.base_dir, "deposition"), exist_ok=True)
         os.makedirs(os.path.join(self.config.base_dir, "characterization"), exist_ok=True)
         
-        # 保存元数据
+        # save metadata
         metadata = {
             "date": datetime.now().strftime("%Y%m%d"),
             "time": datetime.now().strftime("%H:%M:%S"),
@@ -110,17 +110,17 @@ class WorkflowTester:
         self.data_manager.save_metadata(metadata)
         
     async def test_deposition_workflow(self) -> None:
-        """测试沉积工作流"""
+        """test deposition workflow"""
         logger.info("Testing deposition workflow...")
         
         try:
-            # 连接设备
+            # connect to the device
             self.device.connect()
             
-            # 创建沉积技术序列
+            # create deposition technique sequence
             techniques = []
             
-            # 添加 OCV 技术
+            # add OCV technique
             ocv_params = OCVParams(
                 rest_time_T=60,
                 record_every_dT=0.5,
@@ -128,7 +128,7 @@ class WorkflowTester:
             )
             techniques.append(MockOCVTechnique(ocv_params))
             
-            # 添加 CP 技术
+            # add CP technique
             cp_step = CPStep(
                 current=self.config.deposition_current,
                 duration=self.config.deposition_duration
@@ -140,10 +140,10 @@ class WorkflowTester:
             )
             techniques.append(MockCPTechnique(cp_params))
             
-            # 添加最终 OCV
+            # add final OCV technique
             techniques.append(MockOCVTechnique(ocv_params))
             
-            # 运行技术序列
+            # run technique sequence
             await self.device.run_techniques(techniques, "deposition")
             
             logger.info("Deposition workflow test completed successfully")
@@ -156,24 +156,24 @@ class WorkflowTester:
             self.device.disconnect()
             
     async def test_characterization_workflow(self) -> None:
-        """测试表征工作流"""
+        """test characterization workflow"""
         logger.info("Testing characterization workflow...")
         
         try:
-            # 连接设备
+            # connect to the device
             self.device.connect()
             
-            # 创建表征技术序列
+            # create characterization technique sequence
             techniques = []
             
-            # 添加初始 OCV
+            # add initial OCV
             ocv_params = OCVParams(
                 rest_time_T=10,
                 record_every_dT=0.5
             )
             techniques.append(MockOCVTechnique(ocv_params))
             
-            # 添加不同扫描速率的 CV
+            # add CV techniques with different scan rates
             for scan_rate in [0.02, 0.04, 0.06, 0.08, 0.1]:
                 cv_steps = [
                     CVStep(voltage=-0.2, scan_rate=scan_rate, vs_initial=False),
@@ -187,7 +187,7 @@ class WorkflowTester:
                 )
                 techniques.append(MockCVTechnique(cv_params))
                 
-            # 添加 PEIS 技术
+            # add PEIS technique
             peis_params_list = [
                 PEISParams(
                     initial_voltage_step=0.0,
@@ -205,7 +205,7 @@ class WorkflowTester:
             for params in peis_params_list:
                 techniques.append(MockPEISTechnique(params))
             
-            # 添加活性和稳定性测试
+            # add activity and stability tests
             cv_steps_activity = [
                 CVStep(voltage=0.0, scan_rate=0.05, vs_initial=False),
                 CVStep(voltage=1.0, scan_rate=0.05, vs_initial=False),
@@ -230,7 +230,7 @@ class WorkflowTester:
             )
             techniques.append(MockCVTechnique(cv_params_stability))
             
-            # 运行技术序列
+            # run technique sequence
             await self.device.run_techniques(techniques, "characterization")
             
             logger.info("Characterization workflow test completed successfully")
@@ -243,13 +243,13 @@ class WorkflowTester:
             self.device.disconnect()
             
     async def run_all_tests(self) -> None:
-        """运行所有测试"""
+        """run all tests"""
         try:
             self.setup()
             await self.test_deposition_workflow()
             await self.test_characterization_workflow()
             
-            # 更新测试状态
+            # update test status
             self.data_manager.update_metadata({
                 "status": "completed",
                 "completion_time": datetime.now().strftime("%H:%M:%S")
@@ -266,16 +266,16 @@ class WorkflowTester:
             raise
 
 async def main():
-    """主函数"""
-    # 创建测试配置
+    """main function"""
+    # create test configuration
     config = TestConfig(
         experiment_id=f"test_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
     )
     
-    # 创建工作流测试器
+    # create workflow tester
     tester = WorkflowTester(config)
     
-    # 运行测试
+    # run tests
     await tester.run_all_tests()
 
 if __name__ == "__main__":

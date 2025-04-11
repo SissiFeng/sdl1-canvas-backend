@@ -1,5 +1,5 @@
 """
-展示如何使用数据处理模块的示例文件
+show how to use the data processing module
 """
 
 import asyncio
@@ -17,27 +17,27 @@ from src.utils.data_processing import (
     ExperimentController
 )
 
-# 设置日志
+# set up logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 
 async def run_example():
-    # 创建实验配置
+    # create experiment configuration
     strDate = datetime.now().strftime("%Y%m%d")
     strRunNumber = "001"
     strExperimentID = f"{strDate}_{strRunNumber}"
     strExperimentPath = os.path.join(os.getcwd(), 'data', strExperimentID)
     
-    # 创建实验配置
+    # create experiment configuration
     config = create_experiment_config(strExperimentID, strExperimentPath)
     
-    # 创建实验控制器
+    # create experiment controller
     controller = ExperimentController(config)
     
-    # 创建测试技术
-    # OCV测试
+    # create test techniques
+    # OCV test
     ocv_params = OCVParams(
         rest_time_T=10,
         record_every_dT=0.1,
@@ -45,7 +45,7 @@ async def run_example():
     )
     ocv_tech = OCVTechnique(ocv_params)
     
-    # CV测试
+    # CV test
     cv_steps = [
         CVStep(voltage=0, scan_rate=0.05, vs_initial=False),
         CVStep(voltage=1, scan_rate=0.05, vs_initial=False),
@@ -58,7 +58,7 @@ async def run_example():
     )
     cv_tech = CVTechnique(cv_params)
     
-    # PEIS测试
+    # PEIS test
     peis_params = PEISParams(
         vs_initial=False,
         initial_voltage_step=0.0,
@@ -70,24 +70,24 @@ async def run_example():
     )
     peis_tech = PEISTechnique(peis_params)
     
-    # 组合所有技术
+    # combine all techniques
     techniques = [ocv_tech, cv_tech, peis_tech]
     
     try:
-        # 连接设备并运行实验
+        # connect device and run experiment
         with connect('USB0') as bl:
             channel = bl.get_channel(1)
             
-            # 初始化控制器
+            # initialize controller
             controller.initialize(channel)
             
-            # 运行实验
+            # run experiment
             await controller.run_experiment(techniques)
             
     except Exception as e:
-        logging.error(f"实验失败: {str(e)}")
+        logging.error(f"experiment failed: {str(e)}")
         raise
 
 if __name__ == "__main__":
-    # 运行示例
+    # run example
     asyncio.run(run_example()) 
