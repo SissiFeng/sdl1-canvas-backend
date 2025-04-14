@@ -1038,8 +1038,12 @@ ac.dispense_ml(
     volume=1
 )
 
+# ac.dispense_ml(
+#     pumpNumber=nozzle['water'],
+#     volume=1
+# )
 ac.dispense_ml(
-    pumpNumber=nozzle['water'],
+    pumpNumber=nozzle['acid'],
     volume=1
 )
 ac.dispense_ml(
@@ -1047,8 +1051,12 @@ ac.dispense_ml(
     volume=3
 )
 
+# ac.dispense_ml(
+#     pumpNumber=nozzle['water'],
+#     volume=1
+# )
 ac.dispense_ml(
-    pumpNumber=nozzle['water'],
+    pumpNumber=nozzle['acid'],
     volume=1
 )
 ac.dispense_ml(
