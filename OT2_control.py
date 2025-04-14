@@ -1288,30 +1288,30 @@ peisTech_OER = PEISTechnique(peisParams_OER)
 # -----CV-----
 # create CV steps -- active materials
 Ei_active = CVStep(
-    voltage = 0,
-    scan_rate = 0.05,
+    voltage = 1.25,
+    scan_rate = 0.005,
     vs_initial = False
 )
 E1_active = CVStep(
-    voltage = 1,
-    scan_rate = 0.05,
+    voltage = 1.3,
+    scan_rate = 0.005,
     vs_initial = False
 )
 E2_active = CVStep(
-    voltage = 0,
-    scan_rate = 0.05,
+    voltage = 1.25,
+    scan_rate = 0.005,
     vs_initial = False
 )
 Ef_active = CVStep(
-    voltage = 0,
-    scan_rate = 0.05,
+    voltage = 1.25,
+    scan_rate = 0.005,
     vs_initial = False
 )
 
 cvParams_active = CVParams(
     record_every_dE = 0.01,
     average_over_dE = False,
-    n_cycles = 5,
+    n_cycles = 60,
     begin_measuring_i = 0.5,
     end_measuring_i = 1,
     Ei = Ei_active,
@@ -1328,29 +1328,29 @@ cvTech_active = CVTechnique(cvParams_active)
 # -----CV----- check the redox peaks 
 Ei_active = CVStep(
     voltage = -0.8,
-    scan_rate = 0.05,
+    scan_rate = 0.025,
     vs_initial = False
 )
 E1_active = CVStep(
-    voltage = 0.6,
-    scan_rate = 0.05,
-    vs_initial = True
+    voltage = 1.0,
+    scan_rate = 0.025,
+    vs_initial = False
 )
 E2_active = CVStep(
     voltage = -0.8,
-    scan_rate = 0.05,
-    vs_initial = True
+    scan_rate = 0.025,
+    vs_initial = False
 )
 Ef_active = CVStep(
-    voltage = 0.6,
-    scan_rate = 0.05,
-    vs_initial = True
+    voltage = 1.0,
+    scan_rate = 0.025,
+    vs_initial = False
 )
 
 cvParams_redox = CVParams(
     record_every_dE = 0.01,
     average_over_dE = False,
-    n_cycles = 2,
+    n_cycles = 1,
     begin_measuring_i = 0.5,
     end_measuring_i = 1,
     Ei = Ei_active,
@@ -1387,8 +1387,8 @@ Ef_20 = CVStep(
 )
 
 cvParams_20 = CVParams(
-    record_every_dE = 0.01,
-    average_over_dE = False,
+    record_every_dE = 0.001,
+    average_over_dE = True,
     n_cycles = 3,
     begin_measuring_i = 0.5,
     end_measuring_i = 1,
@@ -1404,29 +1404,29 @@ cvTech_20 = CVTechnique(cvParams_20)
 
 # create CV steps
 Ei_40 = CVStep(
-    voltage = -0.05,
+    voltage = 0.0,
     scan_rate = 0.04,
     vs_initial = True 
 )
 E1_40 = CVStep(
-    voltage = 0.05,
+    voltage = 0.10,
     scan_rate = 0.04,
     vs_initial = True
 )
 E2_40 = CVStep(
-    voltage = -0.05,
+    voltage = -0.00,
     scan_rate = 0.04,
     vs_initial = True
 )
 Ef_40 = CVStep(
-    voltage = -0.05,
+    voltage = -0.00,
     scan_rate = 0.04,
     vs_initial = True
 )
 
 cvParams_40 = CVParams(
-    record_every_dE = 0.01,
-    average_over_dE = False,
+    record_every_dE = 0.001,
+    average_over_dE = True,
     n_cycles = 3,
     begin_measuring_i = 0.5,
     end_measuring_i = 1,
@@ -1442,29 +1442,29 @@ cvTech_40 = CVTechnique(cvParams_40)
 
 # create CV steps
 Ei_60 = CVStep(
-    voltage = -0.05,
+    voltage = -0.00,
     scan_rate = 0.06,
     vs_initial = True 
 )
 E1_60 = CVStep(
-    voltage = 0.05,
+    voltage = 0.10,
     scan_rate = 0.06,
     vs_initial = True
 )
 E2_60 = CVStep(
-    voltage = -0.05,
+    voltage = -0.00,
     scan_rate = 0.06,
     vs_initial = True
 )
 Ef_60 = CVStep(
-    voltage = -0.05,
+    voltage = -0.00,
     scan_rate = 0.06,
     vs_initial = True
 )
 
 cvParams_60 = CVParams(
-    record_every_dE = 0.01,
-    average_over_dE = False,
+    record_every_dE = 0.001,
+    average_over_dE = True,
     n_cycles = 3,
     begin_measuring_i = 0.5,
     end_measuring_i = 1,
@@ -1480,29 +1480,29 @@ cvTech_60 = CVTechnique(cvParams_60)
 
 # create CV steps
 Ei_80 = CVStep(
-    voltage = -0.05,
+    voltage = -0.00,
     scan_rate = 0.08,
     vs_initial = True 
 )
 E1_80 = CVStep(
-    voltage = 0.05,
+    voltage = 0.10,
     scan_rate = 0.08,
     vs_initial = True
 )
 E2_80 = CVStep(
-    voltage = -0.05,
+    voltage = -0.00,
     scan_rate = 0.08,
     vs_initial = True
 )
 Ef_80 = CVStep(
-    voltage = -0.05,
+    voltage = -0.00,
     scan_rate = 0.08,
     vs_initial = True
 )
 
 cvParams_80 = CVParams(
-    record_every_dE = 0.01,
-    average_over_dE = False,
+    record_every_dE = 0.001,
+    average_over_dE = True,
     n_cycles = 3,
     begin_measuring_i = 0.5,
     end_measuring_i = 1,
@@ -1518,29 +1518,29 @@ cvTech_80 = CVTechnique(cvParams_80)
 
 # create CV steps
 Ei_100 = CVStep(
-    voltage = -0.05,
+    voltage = -0.00,
     scan_rate = 0.1,
     vs_initial = True 
 )
 E1_100 = CVStep(
-    voltage = 0.05,
+    voltage = 0.10,
     scan_rate = 0.1,
     vs_initial = True
 )
 E2_100 = CVStep(
-    voltage = -0.05,
+    voltage = -0.00,
     scan_rate = 0.1,
     vs_initial = True
 )
 Ef_100 = CVStep(
-    voltage = -0.05,
+    voltage = -0.00,
     scan_rate = 0.1,
     vs_initial = True
 )
 
 cvParams_100 = CVParams(
-    record_every_dE = 0.01,
-    average_over_dE = False,
+    record_every_dE = 0.001,
+    average_over_dE = True,
     n_cycles = 3,
     begin_measuring_i = 0.5,
     end_measuring_i = 1,
@@ -1627,98 +1627,41 @@ lpParams_lsv_wOCP = LPParams(
 # create a technique for LPR with OCP
 lpTech_lsv_wOCP = LPTechnique(lpParams_lsv_wOCP)
 
-boolTryToConnect = True
-intAttempts_temp = 0
-intMaxAttempts = 3
 
-# initialize an empty dataframe to store the results
-dfData = pd.DataFrame()
-# initialize a counter to keep track of the technique index
-intID_tech = 0
-# initialize a counter to keep track of the number to add to technique index 
-# (to account for multiple processes)
-intID_tech_add = 0
-# initialize a string to keep track of the current technique
-strCurrentTechnique = ''
 
-boolNewTechnique = False
-boolAdd1ToTechIndex = False
-boolFirstTechnique = True
-
-fltTime_prev = 0
-fltTime_curr = 0
 # this is fucking stupid - fix it in the future -- not stupid, its ok!
-
-# this should happen in the analysis script, you want the run script to be very modular
-
-# technique_names = {
-#     0: "ocv_0",
-#     1: "cva_1",
-#     2: "cva_2",
-#     3: "cva_3",
-#     4: "cva_4",
-#     5: "cva_5",
-#     6: "peis_6",
-#     7: "peis_7",
-#     8: "cv_8",
-#     9: "cv_9",
-#     10: "ocv_10",
-#     11: "cva_11",
-#     12: "cva_12",
-#     13: "cva_13",
-#     14: "cva_14",
-#     15: "cva_15",
-#     16: "peis_16",
-#     17: "peis_17",
-#     18: "cv_18",
-#     19: "lsv_19",
-#     20: "cv_20",
-#     21: "ocv_21",
-#     22: "cva_22",
-#     23: "cva_23",
-#     24: "cva_24",
-#     25: "cva_25",
-#     26: "cva_26",
-#     27: "peis_27",
-#     28: "peis_28",
-#     29: "cv_29"
-# }
-
-
 def run_and_save_characterization(
     strExperimentID,
     strExperimentPath,
     techniques_list,
-    intID_tech_add_start=0,
+    intGlobalTechID=0,  # for multiple batch
     intMaxAttempts=3,
     usb_port='USB0',
     channel_id=1
 ):
     """
-    Run Biologic techniques in batches and save the data with continuous numbering.
-    Returns the final intID_tech_add so that the next batch can continue numbering.
+    Run Biologic techniques in batches and save each technique's data as a separate CSV,
+    with increasing global numbering across batches.
     """
-
-    # 初始化变量（注意：intID_tech_add 由上一轮传入）
-    intID_tech_add = intID_tech_add_start
     boolTryToConnect = True
     intAttempts_temp = 0
 
     boolFirstTechnique = True
     boolNewTechnique = False
     boolAdd1ToTechIndex = False
+
     intID_tech = None
     fltTime_prev = 0.0
     fltTime_curr = 0.0
     dfData = pd.DataFrame()
+    strCurrentTechnique = ''
 
     while boolTryToConnect and intAttempts_temp < intMaxAttempts:
-        logging.info(f"Attempting to connect to the Biologic: {intAttempts_temp + 1} / {intMaxAttempts}")
+        logging.info(f"Attempting to connect to Biologic: {intAttempts_temp + 1} / {intMaxAttempts}")
 
         try:
             with connect(usb_port) as bl:
                 channel = bl.get_channel(channel_id)
-
                 runner = channel.run_techniques(techniques_list)
 
                 for data_temp in runner:
@@ -1726,32 +1669,36 @@ def run_and_save_characterization(
                         strCurrentTechnique = str(type(data_temp.data)).split("'")[1].split(".")[-2]
                         boolFirstTechnique = False
 
+                    # detect whether a tech is new
                     if intID_tech is None or data_temp.tech_index != intID_tech:
-                         boolNewTechnique = True
+                        boolNewTechnique = True
 
+                    # load data
                     if 'process_index' in data_temp.data.to_json():
                         dfData_temp = pd.DataFrame(data_temp.data.process_data.to_json(), index=[0])
                     else:
                         dfData_temp = pd.DataFrame(data_temp.data.to_json(), index=[0])
+
                         if 'time' in data_temp.data.to_json():
                             fltTime_prev = fltTime_curr
                             fltTime_curr = float(data_temp.data.to_json()['time'])
+
                         if (fltTime_prev - 2 > fltTime_curr) and (data_temp.tech_index == intID_tech):
                             boolAdd1ToTechIndex = True
                             boolNewTechnique = True
 
                     if boolNewTechnique:
-                        filename = f'{strExperimentID}_{intID_tech + intID_tech_add}_{strCurrentTechnique}.csv'
-                        filepath = os.path.join(strExperimentPath, 'characterization', filename)
-                        dfData.to_csv(filepath, index=False)
-                        logging.info(f"Saved: {filepath}")
+                        # save the last tech if current tech is not new
+                        if not dfData.empty:
+                            filename = f'{strExperimentID}_{intGlobalTechID}_{strCurrentTechnique}.csv'
+                            filepath = os.path.join(strExperimentPath, 'characterization', filename)
+                            dfData.to_csv(filepath, index=False)
+                            logging.info(f"Saved: {filepath}")
+                            intGlobalTechID += 1  
 
                         dfData = pd.DataFrame()
                         boolNewTechnique = False
-
-                        if boolAdd1ToTechIndex:
-                            intID_tech_add += 1
-                            boolAdd1ToTechIndex = False
+                        boolAdd1ToTechIndex = False
 
                         intID_tech = data_temp.tech_index
                         strCurrentTechnique = str(type(data_temp.data)).split("'")[1].split(".")[-2]
@@ -1759,16 +1706,15 @@ def run_and_save_characterization(
                     logging.info(data_temp)
                     dfData = pd.concat([dfData, dfData_temp], ignore_index=True)
 
-                else:
-                    time.sleep(1)
+                # save the last 
+                if not dfData.empty:
+                    filename = f'{strExperimentID}_{intGlobalTechID}_{strCurrentTechnique}.csv'
+                    filepath = os.path.join(strExperimentPath, 'characterization', filename)
+                    dfData.to_csv(filepath, index=False)
+                    logging.info(f"Saved final: {filepath}")
+                    intGlobalTechID += 1
 
-                # 保存最后一个技术数据
-                filename = f'{strExperimentID}_{intID_tech + intID_tech_add}_{strCurrentTechnique}.csv'
-                filepath = os.path.join(strExperimentPath, 'characterization', filename)
-                dfData.to_csv(filepath, index=False)
-                logging.info(f"Saved final: {filepath}")
-
-                boolTryToConnect = False  # 成功就退出
+                boolTryToConnect = False
 
         except Exception as e:
             logging.error(f"Failed to connect to the Biologic: {e}")
@@ -1777,46 +1723,37 @@ def run_and_save_characterization(
             intAttempts_temp += 1
 
     logging.info("Finished one batch of characterization.")
-    return intID_tech_add + 1  # 返回下一个 batch 的起始编号
+    return intGlobalTechID  # return id
 
-intID_tech_add = 0  # 初始化编号
+intGlobalTechID = 0
 
-# 第一次 run
-intID_tech_add = run_and_save_characterization(
+# First job request
+intGlobalTechID = run_and_save_characterization(
     strExperimentID, strExperimentPath,
-    [
-        ocvTech_10sec, cvTech_20, cvTech_40, cvTech_60,
+    [ocvTech_10sec, cvTech_20, cvTech_40, cvTech_60,
         cvTech_80, cvTech_100, peisTech_noOER, peisTech_OER,
         cvTech_redox, cvTech_active, ocvTech_10sec, cvTech_20,
-        cvTech_40, cvTech_60, cvTech_80, cvTech_100
-    ],
-    intID_tech_add
+        cvTech_40, cvTech_60, cvTech_80, cvTech_100],
+    intGlobalTechID
 )
 
-# 第二次 run
-intID_tech_add = run_and_save_characterization(
+intGlobalTechID = run_and_save_characterization(
     strExperimentID, strExperimentPath,
-    [
-        peisTech_noOER, peisTech_OER,
-        cvTech_redox, lpTech_lsv_wOCP
-    ],
-    intID_tech_add
+    [peisTech_noOER, peisTech_OER,
+        cvTech_redox, lpTech_lsv_wOCP],
+    intGlobalTechID
 )
 
-# 第三次 run
-intID_tech_add = run_and_save_characterization(
+intGlobalTechID = run_and_save_characterization(
     strExperimentID, strExperimentPath,
-    [
-        cvTech_stability, ocvTech_10sec, cvTech_20,
+    [ cvTech_stability, ocvTech_10sec, cvTech_20,
         cvTech_40, cvTech_60, cvTech_80, cvTech_100,
-        peisTech_noOER, peisTech_OER, cvTech_redox
-    ],
-    intID_tech_add
+        peisTech_noOER, peisTech_OER, cvTech_redox, lpTech_lsv_wOCP],
+    intGlobalTechID
 )
 
 # log the end of the experiment
 logging.info("End of characterization experiment!")
-
 
 #%%
 # USE OPENTRONS INSTRUMENTS AND ARDUINO TO CLEAN ELECTRODE-----------------------------------------
