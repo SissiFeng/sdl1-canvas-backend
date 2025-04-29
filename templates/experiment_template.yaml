@@ -1,0 +1,58 @@
+# Biologic 多技术实验配置模板
+# 此文件定义了一系列要连续运行的电化学技术及其参数
+
+# 设备连接配置
+device:
+  port: "USB0"  # Biologic设备端口，通常是USB0、USB1等
+  channel: 1    # 使用的通道号
+
+# 可视化服务器配置
+visualization:
+  host: "0.0.0.0"  # 服务器主机地址
+  port: 8765       # 服务器端口
+
+# 实验序列 - 按顺序执行的技术列表
+sequence:
+  # 开路电压测量
+  - technique: "ocv"
+    params:
+      rest_time: 60        # 测量时间(秒)
+      record_every_dt: 0.1 # 数据记录间隔(秒)
+    
+  # 循环伏安法
+  - technique: "cv"
+    params:
+      voltage_step: 0.5    # 电压步长(V)
+      scan_rate: 0.05      # 扫描速率(V/s)
+      n_cycles: 3          # 循环次数
+      record_every_dE: 0.001 # 数据记录间隔(V)
+  
+  # 电化学阻抗谱
+  - technique: "peis"
+    params:
+      initial_voltage_step: 0.0  # 初始电压步长(V)
+      final_frequency: 0.1       # 最终频率(Hz)
+      initial_frequency: 100000  # 初始频率(Hz)
+      sweep: "logarithmic"       # 扫描模式(logarithmic或linear)
+      amplitude_voltage: 0.01    # 振幅电压(V)
+      frequency_number: 50       # 频率点数量
+  
+  # 恒电流测量
+  - technique: "cp"
+    params:
+      current: 0.001       # 电流(A)
+      duration: 30         # 持续时间(秒)
+      record_every_dt: 0.1 # 数据记录间隔(秒)
+  
+  # 线性极化
+  - technique: "lp"
+    params:
+      voltage_step: 0.01   # 电压步长(V)
+      scan_rate: 0.001     # 扫描速率(V/s)
+      record_every_dE: 0.0001 # 数据记录间隔(V)
+
+# 数据保存配置
+data_saving:
+  enabled: true
+  directory: "data/experiments"
+  experiment_id: "auto"  # 使用"auto"自动生成基于时间的ID

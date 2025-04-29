@@ -1,0 +1,98 @@
+.header {
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 1;
+}
+
+.logo {
+  height: 32px;
+  margin: 16px;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.site-layout-background {
+  background: #fff;
+}
+
+.thread-card {
+  margin-bottom: 16px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.thread-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.thread-card.active {
+  border-color: #1890ff;
+}
+
+.thread-thumbnail {
+  height: 80px;
+  background: #f0f2f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.config-panel {
+  padding: 16px;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.config-card {
+  margin-bottom: 16px;
+}
+
+.draggable-module {
+  padding: 8px;
+  margin-bottom: 8px;
+  border: 1px solid #d9d9d9;
+  border-radius: 2px;
+  background: #fafafa;
+  cursor: move;
+}
+
+.chart-container {
+  width: 100%;
+  height: 500px;
+}
+
+.data-table-container {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.selected-row {
+  background-color: #e6f7ff;
+}
+
+.connection-status {
+  display: flex;
+  align-items: center;
+  margin-right: 16px;
+}
+
+.status-indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+.status-connected {
+  background-color: #52c41a;
+}
+
+.status-disconnected {
+  background-color: #f5222d;
+}
+
+.status-connecting {
+  background-color: #faad14;
+}

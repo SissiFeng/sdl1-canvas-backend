@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biologic Real-time Data Visualization</title>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Plotly.js -->
+    <script src="https://cdn.plot.ly/plotly-2.29.1.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Biologic Real-time Data Visualization</h1>
+            <div class="connection-status">
+                <span id="status-indicator" class="status-indicator disconnected"></span>
+                <span id="status-text">Disconnected</span>
+            </div>
+        </header>
+
+        <div class="chart-container">
+            <div id="chart"></div>
+        </div>
+
+        <div class="info-panel">
+            <div class="technique-info">
+                <h3>Current Technique</h3>
+                <p id="technique-name">None</p>
+            </div>
+            <div class="data-info">
+                <h3>Latest Data Point</h3>
+                <p id="latest-data">No data</p>
+            </div>
+            <div class="stats">
+                <h3>Statistics</h3>
+                <p id="data-points">Total points: 0</p>
+                <p id="update-rate">Update rate: 0 pts/sec</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/realtime_chart.js"></script>
+</body>
+</html>

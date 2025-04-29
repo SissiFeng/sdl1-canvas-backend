@@ -1,0 +1,29 @@
+# Biologic 多技术实验简化配置
+# 此文件定义了一系列要连续运行的电化学技术及其参数
+
+# 设备连接配置
+device:
+  port: "USB0"  # Biologic设备端口，通常是USB0、USB1等
+  channel: 1    # 使用的通道号
+
+# 实验序列 - 按顺序执行的技术列表
+sequence:
+  # 开路电压测量 - 测量60秒的开路电压
+  - technique: "ocv"
+    duration: 60  # 秒
+  
+  # 循环伏安法 - 进行3次循环扫描
+  - technique: "cv"
+    voltage_range: [-0.5, 0.5]  # 电压范围 [起始V, 结束V]
+    scan_rate: 0.05  # V/s
+    cycles: 3
+  
+  # 电化学阻抗谱 - 从100kHz到0.1Hz的频率扫描
+  - technique: "peis"
+    frequency_range: [100000, 0.1]  # [起始Hz, 结束Hz]
+    amplitude: 0.01  # V
+  
+  # 恒电流测量 - 施加1mA电流30秒
+  - technique: "cp"
+    current: 0.001  # A
+    duration: 30  # 秒
