@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Layout, theme } from 'antd';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { Layout, theme, message } from 'antd';
 import TopNavBar from './components/TopNavBar';
 import ThreadsPanel from './components/ThreadsPanel';
 import MainChartArea from './components/MainChartArea';
@@ -9,6 +9,17 @@ import useWebSocket from './hooks/useWebSocket';
 import './App.css';
 
 const { Header, Sider, Content, Footer } = Layout;
+
+// 辅助函数，确保值是字符串类型
+const ensureString = (value) => {
+  if (value === null || value === undefined) return '';
+  if (typeof value === 'string') return value;
+  if (typeof value === 'object' && value !== null) {
+    if (value.hasOwnProperty('text')) return String(value.text);
+    return JSON.stringify(value);
+  }
+  return String(value);
+};
 
 function App() {
   const [collapsed, setCollapsed] = useState(false);
@@ -20,13 +31,44 @@ function App() {
   const [selectedPoint, setSelectedPoint] = useState(null);
   const [configVisible, setConfigVisible] = useState(true);
   
+  // 使用 useRef 跟踪最新的状态，避免 useEffect 依赖过多导致的循环
+  const threadsRef = useRef(threads);
+  const currentThreadRef = useRef(currentThread);
+  const dataPointsRef = useRef(dataPoints);
+  
+  // 在 threads 或 currentThread 变化时更新 ref
+  useEffect(() => {
+    threadsRef.current = threads;
+    currentThreadRef.current = currentThread;
+  }, [threads, currentThread]);
+  
+  // 在 dataPoints 变化时更新 ref
+  useEffect(() => {
+    dataPointsRef.current = dataPoints;
+  }, [dataPoints]);
+  
+  // 使用 useCallback 确保函数引用稳定
+  const handleConnect = useCallback(() => {
+    console.log('Manual connect requested');
+    if (connect) {
+      connect();
+    }
+  }, []);
+  
+  const handleDisconnect = useCallback(() => {
+    console.log('Manual disconnect requested');
+    if (disconnect) {
+      disconnect();
+    }
+  }, []);
+  
   const {
     status,
     data,
     currentTechnique,
     connect,
     disconnect
-  } = useWebSocket('ws://localhost:8765/ws');
+  } = useWebSocket('ws://localhost:3003/ws');
 
   const {
     token: { colorBgContainer, borderRadiusLG },
@@ -34,73 +76,118 @@ function App() {
 
   // Effect to handle incoming data
   useEffect(() => {
-    if (data && data.type === 'data_point') {
-      // Add data point to chart data
-      setChartData(prevData => {
-        const technique = data.technique;
-        const newData = { ...prevData };
+    if (!data) return;
+    
+    console.log('Received data:', data);
+    
+    if (data.type === 'data_point') {
+      try {
+        // 确保技术名称是字符串
+        const techniqueName = ensureString(data.technique);
         
-        if (!newData[technique]) {
-          newData[technique] = {
-            x: [],
-            y: [],
-            type: 'scatter',
-            mode: 'lines+markers',
-            name: technique
-          };
-        }
+        // Add data point to chart data - 创建完全新的对象以确保状态变化被检测到
+        setChartData(prevData => {
+          // 浅拷贝顶层对象
+          const newData = { ...prevData };
+          
+          // 获取或初始化技术数据对象
+          const techniqueData = newData[techniqueName] 
+            ? { ...newData[techniqueName] } 
+            : {
+                x: [],
+                y: [],
+                type: 'scatter',
+                mode: 'lines+markers',
+                name: techniqueName
+              };
+          
+          // 创建新的数据数组
+          techniqueData.x = [...(techniqueData.x || []), data.x];
+          techniqueData.y = [...(techniqueData.y || []), data.y];
+          
+          // 更新技术数据对象
+          newData[techniqueName] = techniqueData;
+          
+          console.log(`Updated chartData for ${techniqueName}, now has ${techniqueData.x.length} points`);
+          console.log(`Last point: (${data.x}, ${data.y})`);
+          
+          return newData;
+        });
         
-        newData[technique].x.push(data.x);
-        newData[technique].y.push(data.y);
-        
-        return newData;
-      });
-      
-      // Add data point to data table
-      setDataPoints(prevPoints => [
-        ...prevPoints,
-        {
-          id: prevPoints.length,
-          technique: data.technique,
+        // Add data point to data table
+        const newPoint = {
+          id: dataPointsRef.current.length,
+          technique: techniqueName,
           x: data.x,
           y: data.y,
           timestamp: new Date().toISOString()
-        }
-      ]);
-      
-      // Update threads if needed
-      if (threads.length === 0 || threads[threads.length - 1].technique !== data.technique) {
-        const newThread = {
-          id: threads.length + 1,
-          title: `${data.technique}-${threads.length + 1}`,
-          technique: data.technique,
-          timestamp: new Date().toISOString(),
-          data: {
-            x: [data.x],
-            y: [data.y]
-          }
         };
         
-        setThreads(prevThreads => [...prevThreads, newThread]);
+        setDataPoints(prevPoints => [...prevPoints, newPoint]);
         
-        if (!currentThread) {
-          setCurrentThread(newThread);
+        // Update threads if needed
+        const currentThreads = threadsRef.current;
+        const currentActiveThread = currentThreadRef.current;
+        
+        if (currentThreads.length === 0 || currentThreads[currentThreads.length - 1].technique !== techniqueName) {
+          const newThread = {
+            id: currentThreads.length + 1,
+            title: `${techniqueName}-${currentThreads.length + 1}`,
+            technique: techniqueName,
+            timestamp: new Date().toISOString(),
+            data: {
+              x: [data.x],
+              y: [data.y]
+            }
+          };
+          
+          setThreads(prevThreads => [...prevThreads, newThread]);
+          
+          if (!currentActiveThread) {
+            setCurrentThread(newThread);
+          }
+        } else {
+          // Update the last thread with new data
+          setThreads(prevThreads => {
+            const updatedThreads = [...prevThreads];
+            const lastThread = { ...updatedThreads[updatedThreads.length - 1] };
+            
+            lastThread.data.x.push(data.x);
+            lastThread.data.y.push(data.y);
+            
+            updatedThreads[updatedThreads.length - 1] = lastThread;
+            return updatedThreads;
+          });
         }
-      } else {
-        // Update the last thread with new data
-        setThreads(prevThreads => {
-          const updatedThreads = [...prevThreads];
-          const lastThread = { ...updatedThreads[updatedThreads.length - 1] };
-          
-          lastThread.data.x.push(data.x);
-          lastThread.data.y.push(data.y);
-          
-          updatedThreads[updatedThreads.length - 1] = lastThread;
-          return updatedThreads;
-        });
+      } catch (error) {
+        console.error('Error processing data:', error);
+        message.error('Error processing data');
       }
     }
-  }, [data, threads, currentThread]);
+  }, [data]); // 简化依赖项，只依赖于 data
+
+  // 自动重连监控
+  useEffect(() => {
+    if (status === 'connected') {
+      console.log('WebSocket connected');
+      message.success('Connected to data server');
+    } else if (status === 'disconnected') {
+      console.log('WebSocket disconnected');
+      message.warning('Disconnected from data server');
+    } else if (status === 'connecting') {
+      console.log('WebSocket connecting...');
+      message.loading('Connecting to data server...');
+    }
+  }, [status]);
+
+  // 组件卸载时确保断开连接
+  useEffect(() => {
+    return () => {
+      if (disconnect) {
+        disconnect();
+      }
+    };
+  }, [disconnect]);
 
   // Handle thread selection
   const handleThreadSelect = (thread) => {
@@ -120,6 +207,12 @@ function App() {
 
   // Handle point selection in chart
   const handlePointSelect = (pointData) => {
+    // 确保所有字符串值都是安全的
+    if (pointData && typeof pointData === 'object') {
+      if (pointData.technique) {
+        pointData.technique = ensureString(pointData.technique);
+      }
+    }
     setSelectedPoint(pointData);
   };
 
@@ -130,7 +223,7 @@ function App() {
     const csv = [
       'id,technique,x,y,timestamp',
       ...dataPoints.map(point => 
-        `${point.id},${point.technique},${point.x},${point.y},${point.timestamp}`
+        `${point.id},${ensureString(point.technique)},${point.x},${point.y},${point.timestamp}`
       )
     ].join('\n');
     
@@ -158,8 +251,8 @@ function App() {
       <Header className="header">
         <TopNavBar 
           connectionStatus={status} 
-          onConnect={connect}
-          onDisconnect={disconnect}
+          onConnect={handleConnect}
+          onDisconnect={handleDisconnect}
           onExport={handleExportData}
           onReset={handleReset}
         />

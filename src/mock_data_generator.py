@@ -211,7 +211,7 @@ async def run_mock_server(args):
     """Run mock data server"""
     try:
         # Create WebSocket server
-        web_dir = os.path.join(os.path.dirname(__file__), 'web')
+        web_dir = os.path.join(os.path.dirname(__file__), 'web-react/build')
         server = WebSocketServer(host=args.host, port=args.port, static_dir=web_dir)
         
         # Start WebSocket server

@@ -1,10 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, Typography, Divider, Collapse, Form, Input, InputNumber, Select, Button, Space } from 'antd';
 import { PlusOutlined, PlayCircleOutlined, PauseCircleOutlined } from '@ant-design/icons';
 
 const { Title, Text } = Typography;
 const { Panel } = Collapse;
 const { Option } = Select;
+
+// 辅助函数，确保值是字符串类型
+const ensureString = (value) => {
+  if (value === null || value === undefined) return '';
+  if (typeof value === 'string') return value;
+  if (typeof value === 'object' && value !== null) {
+    if (value.hasOwnProperty('text')) return String(value.text);
+    return JSON.stringify(value);
+  }
+  return String(value);
+};
 
 // Technique module components
 const CVModule = ({ onDragStart }) => (
@@ -168,6 +179,16 @@ const LPConfigForm = () => (
 const ConfigPanel = ({ visible, onClose, currentTechnique }) => {
   const [activeKey, setActiveKey] = useState(['1', '2']);
   const [selectedTechnique, setSelectedTechnique] = useState(null);
+  
+  // 确保currentTechnique是字符串并且小写化以匹配case语句
+  const safeTechnique = currentTechnique ? ensureString(currentTechnique).toLowerCase() : null;
+  
+  // 当currentTechnique变更时，自动设置selectedTechnique
+  useEffect(() => {
+    if (safeTechnique) {
+      setSelectedTechnique(safeTechnique);
+    }
+  }, [safeTechnique]);
 
   const handleDragStart = (technique) => (event) => {
     event.dataTransfer.setData('technique', technique);
@@ -175,7 +196,9 @@ const ConfigPanel = ({ visible, onClose, currentTechnique }) => {
   };
 
   const renderConfigForm = () => {
-    switch (selectedTechnique) {
+    const technique = selectedTechnique || safeTechnique;
+    
+    switch (technique) {
       case 'cv':
         return <CVConfigForm />;
       case 'peis':
@@ -189,13 +212,64 @@ const ConfigPanel = ({ visible, onClose, currentTechnique }) => {
       default:
         return (
           <div style={{ textAlign: 'center', padding: '20px 0' }}>
-            <Text type="secondary">Drag a technique module here to configure</Text>
+            <Text type="secondary">
+              {currentTechnique ? 
+                `No configuration available for ${ensureString(currentTechnique)}` : 
+                'Drag a technique module here to configure'}
+            </Text>
           </div>
         );
     }
   };
 
   if (!visible) return null;
+
+  // 使用items属性而不是children属性来避免rc-collapse的警告
+  const collapseItems = [
+    {
+      key: '1',
+      label: 'Technique Modules',
+      children: (
+        <Space direction="vertical" style={{ width: '100%' }}>
+          <CVModule onDragStart={handleDragStart('cv')} />
+          <PEISModule onDragStart={handleDragStart('peis')} />
+          <OCVModule onDragStart={handleDragStart('ocv')} />
+          <CPModule onDragStart={handleDragStart('cp')} />
+          <LPModule onDragStart={handleDragStart('lp')} />
+        </Space>
+      )
+    },
+    {
+      key: '2',
+      label: 'Parameters',
+      children: renderConfigForm()
+    },
+    {
+      key: '3',
+      label: 'Dimension Mapping',
+      children: (
+        <Form layout="vertical">
+          <Form.Item label="X-Axis">
+            <Select defaultValue="voltage" style={{ width: '100%' }}>
+              <Option value="voltage">Voltage (V)</Option>
+              <Option value="current">Current (A)</Option>
+              <Option value="time">Time (s)</Option>
+              <Option value="frequency">Frequency (Hz)</Option>
+              <Option value="re_z">Re(Z) (Ω)</Option>
+            </Select>
+          </Form.Item>
+          <Form.Item label="Y-Axis">
+            <Select defaultValue="current" style={{ width: '100%' }}>
+              <Option value="voltage">Voltage (V)</Option>
+              <Option value="current">Current (A)</Option>
+              <Option value="time">Time (s)</Option>
+              <Option value="im_z">-Im(Z) (Ω)</Option>
+            </Select>
+          </Form.Item>
+        </Form>
+      )
+    }
+  ];
 
   return (
     <div className="config-panel">
@@ -206,43 +280,8 @@ const ConfigPanel = ({ visible, onClose, currentTechnique }) => {
         activeKey={activeKey} 
         onChange={setActiveKey}
         ghost
-      >
-        <Panel header="Technique Modules" key="1">
-          <Space direction="vertical" style={{ width: '100%' }}>
-            <CVModule onDragStart={handleDragStart('cv')} />
-            <PEISModule onDragStart={handleDragStart('peis')} />
-            <OCVModule onDragStart={handleDragStart('ocv')} />
-            <CPModule onDragStart={handleDragStart('cp')} />
-            <LPModule onDragStart={handleDragStart('lp')} />
-          </Space>
-        </Panel>
-        
-        <Panel header="Parameters" key="2">
-          {renderConfigForm()}
-        </Panel>
-        
-        <Panel header="Dimension Mapping" key="3">
-          <Form layout="vertical">
-            <Form.Item label="X-Axis">
-              <Select defaultValue="voltage" style={{ width: '100%' }}>
-                <Option value="voltage">Voltage (V)</Option>
-                <Option value="current">Current (A)</Option>
-                <Option value="time">Time (s)</Option>
-                <Option value="frequency">Frequency (Hz)</Option>
-                <Option value="re_z">Re(Z) (Ω)</Option>
-              </Select>
-            </Form.Item>
-            <Form.Item label="Y-Axis">
-              <Select defaultValue="current" style={{ width: '100%' }}>
-                <Option value="voltage">Voltage (V)</Option>
-                <Option value="current">Current (A)</Option>
-                <Option value="time">Time (s)</Option>
-                <Option value="im_z">-Im(Z) (Ω)</Option>
-              </Select>
-            </Form.Item>
-          </Form>
-        </Panel>
-      </Collapse>
+        items={collapseItems}
+      />
     </div>
   );
 };
