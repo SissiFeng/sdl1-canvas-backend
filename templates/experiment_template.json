@@ -1,0 +1,63 @@
+{
+  "device": {
+    "port": "USB0",
+    "channel": 1
+  },
+  
+  "visualization": {
+    "host": "0.0.0.0",
+    "port": 8765
+  },
+  
+  "sequence": [
+    {
+      "technique": "ocv",
+      "params": {
+        "rest_time": 60,
+        "record_every_dt": 0.1
+      }
+    },
+    {
+      "technique": "cv",
+      "params": {
+        "voltage_step": 0.5,
+        "scan_rate": 0.05,
+        "n_cycles": 3,
+        "record_every_dE": 0.001
+      }
+    },
+    {
+      "technique": "peis",
+      "params": {
+        "initial_voltage_step": 0.0,
+        "final_frequency": 0.1,
+        "initial_frequency": 100000,
+        "sweep": "logarithmic",
+        "amplitude_voltage": 0.01,
+        "frequency_number": 50
+      }
+    },
+    {
+      "technique": "cp",
+      "params": {
+        "current": 0.001,
+        "duration": 30,
+        "record_every_dt": 0.1
+      }
+    },
+    {
+      "technique": "lp",
+      "params": {
+        "voltage_step": 0.01,
+        "scan_rate": 0.001,
+        "record_every_dE": 0.0001
+      }
+    }
+  ],
+  
+  "data_saving": {
+    "enabled": true,
+    "directory": "data/experiments",
+    "experiment_id": "auto"
+  }
+}

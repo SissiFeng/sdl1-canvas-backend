@@ -1,0 +1,69 @@
+{
+  "channel": 1,
+  "techniques": [
+    {
+      "tech_id": "OCV",
+      "params": {
+        "Rest_time_T": 60.0,
+        "Record_every_dT": 0.1,
+        "Record_every_dE": 0.01,
+        "E_range": "2.5V",
+        "Bandwidth": 5
+      }
+    },
+    {
+      "tech_id": "CV",
+      "params": {
+        "Voltage_step": [0.0, 0.5, 0.0],
+        "vs_initial": [false, false, false],
+        "Scan_rate": [0.05, 0.05, 0.05],
+        "Record_every_dE": 0.001,
+        "Average_over_dE": false,
+        "N_Cycles": 3,
+        "Begin_measuring_I": 0.5,
+        "End_measuring_I": 1.0,
+        "I_Range": "100mA",
+        "Bandwidth": 5
+      }
+    },
+    {
+      "tech_id": "PEIS",
+      "params": {
+        "vs_initial": false,
+        "vs_ref": false,
+        "Initial_voltage_step": 0.0,
+        "Final_voltage_step": 0.0,
+        "Duration_step": 0.0,
+        "Step_number": 0,
+        "Record_every_dT": 0.1,
+        "Record_every_dI": 0.01,
+        "Final_frequency": 0.1,
+        "Initial_frequency": 100000.0,
+        "Frequency_number": 50,
+        "Sweep": "logarithmic",
+        "Amplitude_voltage": 0.01,
+        "Average_N_times": 1,
+        "Correction": false,
+        "Wait_for_steady": 0.1,
+        "I_Range": "Auto",
+        "Bandwidth": 5,
+        "E_Range": "Auto"
+      }
+    },
+    {
+      "tech_id": "CP",
+      "params": {
+        "Current_step": [0.001],
+        "vs_initial": [false],
+        "Duration_step": [30.0],
+        "Step_number": 0,
+        "Record_every_dT": 0.1,
+        "Record_every_dE": 0.01,
+        "N_Cycles": 0,
+        "I_Range": "10mA",
+        "Bandwidth": 5,
+        "E_Range": "Auto"
+      }
+    }
+  ]
+}

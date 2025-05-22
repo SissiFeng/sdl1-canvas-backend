@@ -1,0 +1,29 @@
+{
+  "device": {
+    "port": "USB0",
+    "channel": 1
+  },
+  
+  "sequence": [
+    {
+      "technique": "ocv",
+      "duration": 60
+    },
+    {
+      "technique": "cv",
+      "voltage_range": [-0.5, 0.5],
+      "scan_rate": 0.05,
+      "cycles": 3
+    },
+    {
+      "technique": "peis",
+      "frequency_range": [100000, 0.1],
+      "amplitude": 0.01
+    },
+    {
+      "technique": "cp",
+      "current": 0.001,
+      "duration": 30
+    }
+  ]
+}
